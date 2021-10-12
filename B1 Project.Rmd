@@ -39,6 +39,7 @@ library(leaflet) # for interactive HTML maps
 library(tidytext)
 library(viridis)
 library(vroom)
+library(forcats)
 ```
 
 
@@ -59,9 +60,10 @@ All of the listings are a GZ file, namely they are archive files compressed by t
 
 # use cache=TRUE so you dont donwload the data everytime you knit
 
-listings <- vroom("http://data.insideairbnb.com/italy/lombardy/milan/2021-09-19/data/listings.csv.gz") %>% 
+listings <- vroom("http://data.insideairbnb.com/china/hk/hong-kong/2021-09-24/data/listings.csv.gz") %>% 
        clean_names()
 
+skim(listings)
 ```
 
 
@@ -101,13 +103,47 @@ Conduct a thorough EDA. Recall that an EDA involves three things:
         * `geom_bar()` or `geom_col()` for categorical variables
     * `GGally::ggpairs()` for scaterrlot/correlation matrix
         * Note that you can add transparency to points/density plots in the `aes` call, for example: `aes(colour = gender, alpha = 0.4)`
-        
+
+```{r}
+glimpse(listings) 
+
+skim(listings)
+```
+
+      
 You may wish to have a level 1 header (`#`) for your EDA, then use level 2 sub-headers (`##`) to make sure you cover all three EDA bases. **At a minimum** you should address these questions:
 
 - How many variables/columns? How many rows/observations?
 - Which variables are numbers?
 - Which are categorical or *factor* variables (numeric or character variables with variables that have a fixed and known set of possible values?
 - What are the correlations between variables? Does each scatterplot support a linear relationship between variables? Do any of the correlations appear to be conditional on the value of a categorical variable?
+
+## EDA answers
+
+- There are 74 variables/columns and 6,046 rows/observations
+- TBD
+- Host_location, host_response_time, host_neighbourhood, host_verifications, neighbourhood, neighbourhood_cleansed, property_type, room_type, amenities
+
+```{r}
+reduced_listings <- listings %>% 
+  select(-c(id, listing_url, scrape_id, last_scraped, name, description, neighborhood_overview, picture_url, host_id, host_url, host_name, host_about, host_thumbnail_url, host_picture_url, neighbourhood_group_cleansed,bathrooms, calendar_updated)) %>% 
+  filter(minimum)
+
+glimpse(reduced_listings)
+
+reduced_listings %>% 
+  group_by(property_type) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+reduced_listings %>% 
+  group_by(neighbourhood_cleansed) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+
+```
+
 
 At this stage, you may also find you want to use `filter`, `mutate`, `arrange`, `select`, or `count`. Let your questions lead you! 
 
