@@ -1,15 +1,20 @@
 # Group_project_B1 Executive Summary
 
 Next Steps:
-  Look at distribution of variables
-  Jared: figure out how to match amenities/score
-  Look at correlation betwixt variables
-  Convert price to numeric
-  Create a var: price given length of stay variable is 4
-  Dummy Variable
-  Log Price Variable
-  Split Data 30/70
-  Regression & Checks
+
+Today:
+ 1. Peter: Convert price to numeric variable. Transform into logarithm, change to 4 days
+ 2. David: Create all dummy variables
+ 3. Soham: Split 30/70
+ 4. Jared: figure out how to match amenities/score
+ 5. Kelly & Busie: Exploratory Data Analysis (answer the questions)
+ 
+ Tomorrow:
+ 1. Look at distribution of variables
+ 2. Look at correlation between variables
+ 3. Create first regression analysis
+ 4. Do regression analysis checks (VIF, etc.)
+  
 key data points 
   Amenities analysis (4 var)
   Neighborhood (5 var)
