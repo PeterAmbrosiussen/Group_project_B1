@@ -130,8 +130,8 @@ You may wish to have a level 1 header (`#`) for your EDA, then use level 2 sub-h
 
 ```{r}
 reduced_listings <- listings %>% 
-  select(-c(id, listing_url, scrape_id, last_scraped, name, description, neighborhood_overview, picture_url, host_id, host_url, host_name, host_about, host_thumbnail_url, host_picture_url, neighbourhood_group_cleansed,bathrooms, calendar_updated)) %>% 
-  filter(minimum)
+  select(-c(id, listing_url, scrape_id, last_scraped, name, description, neighborhood_overview, picture_url, host_id, host_url, host_name, host_about, host_thumbnail_url, host_picture_url, neighbourhood_group_cleansed,bathrooms, calendar_updated))# %>% 
+  #filter(minimum)
 
 glimpse(reduced_listings)
 
@@ -144,6 +144,22 @@ reduced_listings %>%
   group_by(neighbourhood_cleansed) %>% 
   count() %>% 
   arrange(desc(n))
+
+reduced_listings$amenity_count <- str_count(reduced_listings$amenities,",")+1
+head(reduced_listings$amenities)
+amenities <- unique(reduced_listings$amenities)
+head(reduced_listings$amenities)
+amenities = str_remove_all(amenities,"\"")
+amenities = str_remove_all(amenities,"\\[")
+amenities = str_remove_all(amenities,"\\]")
+amenities = str_trim(amenities)
+total_amenities <- str_trim(unlist(strsplit(amenities,"[,]")))
+head(total_amenities,10)
+as.data.frame(table(total_amenities))%>%
+  arrange(desc(Freq))
+
+reduced_listings$important_amenities <- 
+  
 
 
 ```
