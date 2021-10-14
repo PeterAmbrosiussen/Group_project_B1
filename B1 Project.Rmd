@@ -110,8 +110,9 @@ Conduct a thorough EDA. Recall that an EDA involves three things:
 
 ```{r}
 glimpse(listings) 
-
 skim(listings)
+
+
 ```
 
       
@@ -158,10 +159,40 @@ head(total_amenities,10)
 as.data.frame(table(total_amenities))%>%
   arrange(desc(Freq))
 
-reduced_listings$important_amenities <- 
-  
+reduced_listings <- reduced_listings %>% 
+  filter (maximum_nights >= "4", minimum_nights <= "4", host_acceptance_rate > "0%") %>% 
+  mutate(
+         price_per_4 = (price*4),
+  log_price=log(price),
+  log_price_4=log(price_per_4),
+    # group property_group into 4 groups + other
+    property_group = ifelse(property_type == "Entire rental unit", property_type,
+                            ifelse(property_type == "Private room in rental unit", property_type,
+                                   ifelse(property_type == "Entire condominium (condo)", property_type,
+                                          ifelse(property_type == "Entire serviced apartment", property_type, "Other")))),
+    # create dummy variables for property group
+    entire_rental_unit = ifelse(property_group == "Entire rental unit", 1, 0),
+    private_room_in_rental_unit = ifelse(property_group == "Entire rental unit", 1, 0),
+    entire_condo = ifelse(property_group == "Entire condominium (condo)", 1, 0),
+    entire_serviced_apartment = ifelse(property_group == "Entire serviced apartment", 1, 0),
+    other_property_group = ifelse(property_group == "Other", 1, 0),
+    # group neighbourhood_cleansed into 4 groups + other
+    neighbourhood_group = ifelse(neighbourhood_cleansed == "Yau Tsim Mong", neighbourhood_cleansed,
+                          ifelse(neighbourhood_cleansed == "Central & Western", neighbourhood_cleansed,
+                          ifelse(neighbourhood_cleansed == "Wan Chai", neighbourhood_cleansed,
+                          ifelse(neighbourhood_cleansed == "Islands", neighbourhood_cleansed, "Other")))),
+    
+    # create dummy variables for neighbourhood group
+    yau_tsim_mong = ifelse(neighbourhood_group == "Yau Tsim Mong", 1, 0),
+    central_western = ifelse(neighbourhood_group == "Central & Western", 1, 0),
+    wan_chai = ifelse(neighbourhood_group == "Wan Chai", 1, 0),
+    islands = ifelse(neighbourhood_group == "Islands", 1, 0),
+    other_neighbourhood_group = ifelse(neighbourhood_group == "Other", 1, 0)
+    )
 
+ ##Parse the stuff later
 
+## Removed listings with 0% acceptance rate, and removed listings with price = 0 
 ```
 
 
@@ -254,6 +285,30 @@ Fit a regression model called `model1` with the following explanatory variables:
 We want to determine if `room_type` is a significant predictor of the cost for 4 nights, given everything else in the model. Fit a regression model called model2 that includes all of the explananatory variables in `model1` plus `room_type`. 
 
 
+```{r}
+
+model1 <- lm(log_price_4 ~number_of_reviews + review_scores_rating 
+          + private_room_in_rental_unit +other_property_group + entire_rental_unit + entire_condo + entire_serviced_apartment , reduced_listings)
+
+model2 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
+          factor(property_group) + factor(neighbourhood_group), reduced_listings)
+
+model3 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
+          factor(property_group) + factor(neighbourhood_group) + factor(host_is_superhost), reduced_listings)
+
+model4 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
+          factor(property_group) + factor(neighbourhood_group) + factor(host_is_superhost) + accommodates, reduced_listings)
+
+model5 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
+          factor(property_group) + factor(neighbourhood_group) + factor(host_is_superhost)+ accommodates + beds, reduced_listings)
+
+
+msummary(model1)
+msummary(model2)
+msummary(model3)
+msummary(model4)
+msummary(model5)
+```
 
 ## Further variables/questions to explore on our own
 
