@@ -159,6 +159,28 @@ head(total_amenities,10)
 as.data.frame(table(total_amenities))%>%
   arrange(desc(Freq))
 
+reduced_listings$amenities = str_remove_all(reduced_listings$amenities,"\"")
+reduced_listings$amenities = str_remove_all(reduced_listings$amenities,"\\[")
+reduced_listings$amenities = str_remove_all(reduced_listings$amenities,"\\]")
+reduced_listings$amenities = str_trim(reduced_listings$amenities)
+head(reduced_listings$amenities)
+
+#Find count of important amenities in amenities
+reduced_listings$important_amenities = ifelse(grepl("Wifi",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)+ifelse(grepl("Air conditioning",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)+ifelse(grepl("Essentials",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)
+head(reduced_listings$important_amenities)  
+
+#Find count of accessibility amenities in amenities
+reduced_listings$accessibility = ifelse(grepl("Elevator",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)+ifelse(grepl("Private Entrance",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)
+head(reduced_listings$accessibility)
+
+#find count of space amenities in amenities
+reduced_listings$spacing = ifelse(grepl("Kitchen",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)+ifelse(grepl("Workspace",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)
+head(reduced_listings$spacing)
+
+#find count of gear amenities in amenities
+reduced_listings$gear_amenities = ifelse(grepl("TV",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)+ifelse(grepl("Washer",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)
+head(reduced_listings$accessibility)
+
 reduced_listings <- reduced_listings %>% 
   filter (maximum_nights >= "4", minimum_nights <= "4", host_acceptance_rate > "0%") %>% 
   mutate(
