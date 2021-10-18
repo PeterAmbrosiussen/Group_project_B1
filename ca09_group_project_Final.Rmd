@@ -664,7 +664,7 @@ Conversely, the **most expensive accommodation** is a *private room with 2 baths
 
 When compared to the official prices as listed on AirBnB, the property prices per night are USD 514, 617, 411, 1554, and 1029 respectively. We can see that the **prices for the properties** are **skewed towards the higher end of the CI**, which could be explained by the heteroskedasticity of the data as well as the fact that COVID might have had an impact on the data used in the model, whereas latest prices have significantly changed since then. 
 
-In addition, as our model was trained with middle to high-end data, the only properties this has predictive power for is other middle to high-end properties as we can not extrapolate beyond the scope of our data. The 25th percentile of our prices is around 250 USD per night, so our predictive power decreases for low end airbnbs. The same is true with ultra-high end properties.
+The range of the 95% confidence interval indicates that over multiple experiments, we can expect the price per night to fall between $400 to $1065 95% of the time. When it comes to the predictive power of the model, all of the actual prices fall between the confidence interval, bar one. This is potentially because of the heteroscedastic data and the fact that the latest prices and norms have changed as a result of COVID. A key point is that our model predicts prices for types of houses that fall somewhere in between the price range for the time period we used. This means for anyone looking for budget accommodation or high-end accommodation (extremities), the model won't necessarily predict accurately.
 
 ```
 
