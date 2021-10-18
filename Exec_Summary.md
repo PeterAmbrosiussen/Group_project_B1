@@ -1,31 +1,5 @@
-# Group_project_B1 Executive Summary
+#Group B1 Exec Summary
 
-Next Steps:
-
-Today:
- 1. Peter: Convert price to numeric variable. Transform into logarithm, change to 4 days
- 2. David: Create all dummy variables
- 3. Soham: Split 30/70
- 4. Jared: figure out how to match amenities/score
- 5. Kelly & Busie: Exploratory Data Analysis (answer the questions)
- 
- Tomorrow:
- 1. Look at distribution of variables
- 2. Look at correlation between variables
- 3. Create first regression analysis
- 4. Do regression analysis checks (VIF, etc.)
-  
-key data points 
-  Amenities analysis (4 var)
-  Neighborhood (5 var)
-  Type (5 var)
-  Length of stay (numeric)
-  Reviews rating (given certain number (numeric))
-  Availability as proxy for demand (numeric)
-  Bedroom Number
-  Number Bath
-  Number half Bath
-  Number of Beds
-  Accommadate
-  Is Superhost
-  Instant Bookable
+The purpose of this analysis is to understand what the major influences of prices of Airbnb apartments in Hong Kong are and to establish a range of prices for an Airbnb for two persons, four nights with at least 10 reviews and an average rating of 90. The large dataset is provided by insidearbnb.com, includes more than 6,000 observations, and required significant cleaning. After we removed missing values and manipulated the data to fit our purpose the remaining dataset our model was built on comprises approximately 3,300 observations.
+After analyzing the dataset and running seven iterations of our model, we settled for the sixth model, which had the highest explanatory power. Within model six, our group has identified eleven factors that explain 54% of the total variation in Airbnb prices. As we expected, factors like number of bathrooms, number of bedrooms, accommodates and location are positively related to the price. These features obviously enhance the quality of a listing and subsequently increase the price. Surprisingly, we found negative relationships for the number of reviews and super host status. A high number of reviews most likely does not translate to a higher price because guests are more likely to provide reviews when they had a negative experience. One speculative reason for the negative correlation between super host status and price could be offered discounts to maintain super host status and get better reviews. They also receive benefits from Airbnb, including an annual $100 coupon, which may be passed on to guests.
+The range of the 95% confidence interval indicates that over multiple experiments, we can expect the price per night to fall between $400 to $1065 95% of the time. When it comes to the predictive power of the model, all of the actual prices fall between the confidence interval, bar one. This is potentially because of the heteroscedastic data and the fact that the latest prices and norms have changed as a result of COVID. A key point is that our model predicts prices for types of houses that fall somewhere in between the price range for the time period we used. This means for anyone looking for budget acommodation or high-end accommodation (extremities), the model won't necessarily predict accurately.
