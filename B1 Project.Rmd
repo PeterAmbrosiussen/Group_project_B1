@@ -40,6 +40,9 @@ library(tidytext)
 library(viridis)
 library(vroom)
 library(forcats)
+library(lattice)
+library(lmtest)
+library(sandwich)
 ```
 
 
@@ -181,11 +184,14 @@ head(reduced_listings$spacing)
 reduced_listings$gear_amenities = ifelse(grepl("TV",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)+ifelse(grepl("Washer",reduced_listings$amenities,ignore.case = TRUE,fixed = TRUE),1,0)
 head(reduced_listings$accessibility)
 
+reduced_listings$price_nosign = str_remove_all(reduced_listings$price,"[$]")
+reduced_listings$price_nosign = str_remove_all(reduced_listings$price_nosign,"[,]")
+reduced_listings$price_nosign = as.integer(reduced_listings$price_nosign)
 reduced_listings <- reduced_listings %>% 
   filter (maximum_nights >= "4", minimum_nights <= "4", host_acceptance_rate > "0%") %>% 
   mutate(
-         price_per_4 = (price*4),
-  log_price=log(price),
+         price_per_4 = (price_nosign*4),
+  log_price=log(price_nosign),
   log_price_4=log(price_per_4),
     # group property_group into 4 groups + other
     property_group = ifelse(property_type == "Entire rental unit", property_type,
@@ -211,6 +217,12 @@ reduced_listings <- reduced_listings %>%
     islands = ifelse(neighbourhood_group == "Islands", 1, 0),
     other_neighbourhood_group = ifelse(neighbourhood_group == "Other", 1, 0)
     )
+# group bathrooms_text into 4 groups + other
+    reduced_listings$bathrooms_text_group <- ifelse(reduced_listings$bathrooms_text == "1 bath", reduced_listings$bathrooms_text,
+                           ifelse(reduced_listings$bathrooms_text == "1 private bath", reduced_listings$bathrooms_text,
+                           ifelse(reduced_listings$bathrooms_text == "1 shared bath", reduced_listings$bathrooms_text,
+                           ifelse(reduced_listings$bathrooms_text == "1.5 baths", reduced_listings$bathrooms_text, "Other"))))
+
 
  ##Parse the stuff later
 
@@ -307,9 +319,9 @@ Fit a regression model called `model1` with the following explanatory variables:
 We want to determine if `room_type` is a significant predictor of the cost for 4 nights, given everything else in the model. Fit a regression model called model2 that includes all of the explananatory variables in `model1` plus `room_type`. 
 
 
-```{r}
-
-model1 <- lm(log_price_4 ~number_of_reviews + review_scores_rating 
+```{r, height = 15}
+glimpse(reduced_listings$log_price)
+model1 <- lm(log_price ~number_of_reviews + review_scores_rating 
           + private_room_in_rental_unit +other_property_group + entire_rental_unit + entire_condo + entire_serviced_apartment , reduced_listings)
 
 model2 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
@@ -324,13 +336,39 @@ model4 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
 model5 <- lm(log_price_4 ~number_of_reviews + review_scores_rating +
           factor(property_group) + factor(neighbourhood_group) + factor(host_is_superhost)+ accommodates + beds, reduced_listings)
 
+model6 <- lm(log_price_4 ~accommodates + factor(neighbourhood_group) + private_room_in_rental_unit + important_amenities + availability_30, reduced_listings)
+
+model7 <- lm(log_price_4 ~accommodates + factor(neighbourhood_group) + private_room_in_rental_unit + important_amenities + availability_30 + bathrooms_text_group, reduced_listings)
+car::vif(model6)
+
+model10 <-  lm(log_price_4 ~ factor(room_type) + bathrooms_text_group + bedrooms + accommodates +factor(host_is_superhost) + factor(instant_bookable) + factor(neighbourhood_group) + important_amenities + factor(host_identity_verified)  + host_response_rate, data=reduced_listings)
+bptest(model10)
+shapiro.test(model10$residuals)
+msummary(model10)
+
+
+bptest(model1) #heteroskedastic
+bptest(model2)
+bptest(model3) #heteroskedastic
+bptest(model4)
+bptest(model5)
+bptest(model6) #heteroskedastic
+bptest(model7) #heteroskedastic
 
 msummary(model1)
+coeftest(model1, vcov = vcovHC(model1, type = "HC0"))
 msummary(model2)
 msummary(model3)
+coeftest(model3, vcov = vcovHC(model3, type = "HC0"))
 msummary(model4)
 msummary(model5)
+msummary(model6)
+coeftest(model6, vcov = vcovHC(model6, type = "HC0"))
+msummary(model7)
+coeftest(model7, vcov = vcovHC(model7, type = "HC0"))
 ```
+
+
 
 ## Further variables/questions to explore on our own
 
@@ -341,6 +379,58 @@ Our dataset has many more variables, so here are some ideas on how you can exten
 1. Some hosts allow you to immediately book their listing (`instant_bookable == TRUE`), while a non-trivial proportion don't. After controlling for other variables, is `instant_bookable` a significant predictor of `price_4_nights`?
 1. For all cities, there are 3 variables that relate to neighbourhoods: `neighbourhood`, `neighbourhood_cleansed`, and `neighbourhood_group_cleansed`. There are typically more than 20 neighbourhoods in each city, and it wouldn't make sense to include them all in your model. Use your city knowledge, or ask someone with city knowledge, and see whether you can group neighbourhoods together so the majority of listings falls in fewer (5-6 max) geographical areas. You would thus need to create a new categorical variabale `neighbourhood_simplified` and determine whether location is a predictor of `price_4_nights`
 1. What is the effect of `avalability_30` or `reviews_per_month` on `price_4_nights`, after we control for other variables?
+
+```{r}
+model_size <- lm(log_price_4 ~ bathrooms_text_group + bedrooms, reduced_listings)
+car::vif(model_size)
+bptest(model_size)
+
+model_all_size <- lm(log_price_4 ~ bathrooms_text_group + bedrooms + beds + accommodates, reduced_listings)
+car::vif(model_all_size)
+bptest(model_all_size)
+
+model_super <- lm(log_price_4 ~ factor(host_is_superhost),reduced_listings)
+model_7_super <- lm(log_price_4 ~accommodates + factor(neighbourhood_group) + private_room_in_rental_unit + important_amenities + availability_30 + bathrooms_text_group + factor(host_is_superhost), reduced_listings)
+car::vif(model_7_super)
+bptest(model_7_super) #heteroskedastic
+
+model_8 <- lm(log_price_4 ~accommodates + factor(neighbourhood_group) + private_room_in_rental_unit + important_amenities + availability_30 + bathrooms_text_group + factor(host_is_superhost) + instant_bookable, reduced_listings)
+car::vif(model_8)
+#test for hetero-skedasticity
+bptest(model_8)
+
+which()
+
+
+
+#heteroskedasticity is present, use WLS 
+wt <- 1/lm(abs(model_8$residuals)~model_8$fitted.values, na.action = "na.exclude")$fitted.values^2
+wls_model_8 <- lm(log_price_4 ~accommodates + factor(neighbourhood_group) + private_room_in_rental_unit + important_amenities + availability_30 + bathrooms_text_group + factor(host_is_superhost) + instant_bookable, data = reduced_listings, weights = wt, na.action = "na.exclude")
+
+skim(reduced_listings$price_per_4)
+which(is.na(reduced_listings$price_per_4))
+skim(model_8$residuals)
+shapiro.test(model_8$residuals)
+autoplot(model_8)
+#According to Gauss Markov Theorem OLS is still BLUE even without non-normal distribution as long as they have mean of 0, are uncorrelated, and have constant variance.
+
+
+model_reviews <- lm(log_price_4 ~accommodates + factor(neighbourhood_group) + private_room_in_rental_unit + important_amenities + reviews_per_month + availability_30+ bathrooms_text_group + factor(host_is_superhost) + instant_bookable, reduced_listings)
+car::vif(model_reviews)
+autoplot(model_reviews)
+
+msummary(model_size)
+msummary(model_all_size)
+msummary(model_super)
+msummary(model_7_super)
+coeftest(model_7_super, vcov = vcovHC(model_7_super, type = "HC0")) #robust t test
+msummary(model_8)
+msummary(model_reviews)
+autoplot(model6)
+#robust t test
+coeftest(model_8, vcov = vcovHC(model_8, type = "HC0"))
+msmummary(model_8)
+```
 
 
 ## Diagnostics, collinearity, summary tables
